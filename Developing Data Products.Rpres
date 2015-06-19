@@ -1,0 +1,67 @@
+Developing Data Products
+========================================================
+Coursera Course Project
+
+Growth of Loblolly Pine Trees 
+June 14, 2015
+
+***
+![text](http://www.garrispaving.com/loblolly_pine.jpg)  
+<small>Image courtesy of pixgood.com</small>
+
+Introduction
+========================================================
+The data for this project can be found in the R datasets package.
+```{r, eval=FALSE}
+library(datasets)
+Loblolly
+```
+The described shiny app allows users to:
+
+- Visually compare the growth of Loblolly pine trees from different seeds
+- Visually compare tree growth every 5 years for 25 years
+- View a table of average tree height for selected variables
+
+
+Overview of Dataset
+========================================================
+Below is an subset of the Loblolly dataset showing the average height in feet of trees grown from 3 different seeds, measured at 5, 15, and 25 years.
+```{r, echo=F}
+library(datasets)
+Loblolly<-Loblolly
+##Need to reshape data for a stacked bar graph
+  Lob<-reshape(Loblolly, v.names="height", timevar="age", idvar="Seed", direction="wide")
+example<-head(Lob[,-c(2,4,6)])
+colnames(example)<-c("Seed","height.5yrs","height.15yrs", "height.25yrs")
+example
+```
+
+Data Visualization
+========================================================
+A stacked barplot comparing all included Loblolly seeds measured every five years for twenty five years is not easy to read.  There is a lot of data presented, and users may only be interested in looking at a few seeds or ages at a time.   
+```{r, echo=FALSE}
+##Recalculate data to show increase per year
+    Lob$height.25<-Lob$height.25-Lob$height.20
+    Lob$height.20<-Lob$height.20-Lob$height.15
+    Lob$height.15<-Lob$height.15-Lob$height.10
+    Lob$height.10<-Lob$height.10-Lob$height.5
+    Lob$height.5<-Lob$height.5
+#Remove measurement from 0-3years to start data from 0-5years.  This keeps a consistant step for shiny application.
+      Lob<-Lob[,-2]
+barplot(t(Lob[Lob$Seed,(2:6)]), names.arg = Lob$Seed, col=terrain.colors(8), ylab="Tree Height, Feet", xlab="Seed Source", ylim=c(0,70), xlim=c(0,length(Lob$Seed)+length(Lob$Seed)/2))
+      legend("topright", cex=0.7, title="Growth from Years:", legend=c("0-5","5-10","10-15","15-20","20-25"), fill=terrain.colors(8))
+      
+```
+  
+Loblolly Shiny App
+===
+The Shiny app available **[here](https://amoni13.shinyapps.io/ProjectApp)** will allows user to select only those seeds needed for direct comparison at the ages of interest.
+
+For example, seeds 305 and 311 at 15years.
+```{r, echo=FALSE}
+seed<-c(3,6)
+var<-4
+barplot(t(Lob[seed,(2:var)]), names.arg = Lob$Seed[seed], col=terrain.colors(8), ylab="Tree Height, Feet", xlab="Seed Source", ylim=c(0,70), xlim=c(0,length(Lob$Seed[seed])+length(Lob$Seed[seed])/2))
+      legend("topright", cex=0.7, title="Growth from Years:", legend=c("0-5","5-10","10-15","15-20","20-25"), fill=terrain.colors(8))
+
+```
